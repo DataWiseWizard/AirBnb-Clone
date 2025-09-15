@@ -1,17 +1,17 @@
-if(process.env.NODE_ENV != "production"){
-    require("dotenv").config();
-}
+if(process.env.NODE_ENV !== "production") {
+    require('dotenv').config();
+    console.log(process.env);
+};
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require("./utils/ExpressError.js");
-const { listingSchema} = require("./schema.js");
+const ExpressError = require("./utils/ExpressError.js"); // Standardize to ExpressError
+const { listingSchema} = require("./schema.js"); // Keep local schema import
 
-const MONGO_URL = "mongodb://localhost:27017/wanderlust";
-// const dbUrl = process.env.ATLASDB_URL;
+const dbUrl = process.env.ATLASDB_URL; // Use environment variable for DB URL
 
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
@@ -24,7 +24,6 @@ const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
-
 main()
     .then(() => {
         console.log("connected to DB");
@@ -34,7 +33,7 @@ main()
     })
 
 async function main() {
-    mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl); // Use dbUrl from environment variable
 }
 
 app.set("view engine", "ejs");
@@ -45,94 +44,63 @@ app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-    mongoUrl: MONGO_URL,
+    mongoUrl: dbUrl, // Use dbUrl from environment variable
     crypto: {
-        secret: "mysupersecretcode",
-        touchAfter: 24 * 3600,
-    }
+        secret: process.env.SECRET, // Use environment variable for secret
+    },
+    touchAfter: 24 * 3600,
 })
 
-store.on("error", () => {
+store.on("error", (err) => { // Added err parameter for consistency
     console.log("ERROR in MONGO SESSION STORE.", err);
 })
 
 const sessionOptions = {
     store,
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET, // Use environment variable for secret
     resave: false,
     saveUninitialized: true,
     cookie: {
-        expires: Date.now() + 7 * 24 *60 * 60 * 1000,
-        maxAge: 7 * 24 *60 * 60 * 1000,
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // Standardized cookie expiration
+        maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
     },
 };
 
-app.get("/", (req, res) => {
-    res.redirect("/listings");
-});
-
-
-
-
 app.use(session(sessionOptions));
 app.use(flash());
+
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 
-passport.serializeUser(function(user, done) {
-    console.log("User to serialize:", user);
-    done(null, user.id);
-});
-
-passport.deserializeUser(async function(id, done) {
-    console.log("ID to deserialize:", id);
-    try {
-        const user = await User.findById(id);
-        console.log("Deserialized user:", user);
-        done(null, user);
-    } catch (err) {
-        console.log("Error deserializing user:", err);
-        done(err, null);
-    }
-});
+passport.serializeUser(User.serializeUser()); // Use passport-local-mongoose methods
+passport.deserializeUser(User.deserializeUser()); // Use passport-local-mongoose methods
 
 app.use((req,res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash('error');
     res.locals.currUser = req.user;
-    next(); 
+    next();
 });
 
-// app.get("/demouser", async(req,res) => {
-//     let fakeUser = new User({
-//         email: "student@gmail.com",
-//         username: "delta-student"
-//     })
-//     let registeredUser = await User.register(fakeUser, "HelloWorld");
-//     res.send(registeredUser);
-// })
-
-
+app.get("/", (req, res) => { // Keep local redirect
+    res.redirect("/listings");
+});
 
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
 
 app.all("*", (req, res, next) => {
-    next(new ExpressError(404, "Page not found!"));
+    next(new ExpressError(404, "Page not found!")); // Standardize to ExpressError
 })
 
-
-app.use((err, req, res) => {
-    let { statusCode=500, message="SOmething Went Wrong!" } = err;
-    res.render("error.ejs", { err });
-    // res.status(statusCode).send(message);
-})
-
-app.listen(8081, () => {
-    console.log("server is started");
+app.use((err, req, res, next) => { // Standardized error handling middleware
+    let { statusCode = 500, message = "Something Went Wrong!" } = err;
+    res.status(statusCode).render("error.ejs", { err }); // Pass err object to template
 });
 
-//https://github.com/DataWiseWizard/AirBnb-Clone
+app.listen(8080, () => { // Use port 8080
+    console.log("server is started");
+});

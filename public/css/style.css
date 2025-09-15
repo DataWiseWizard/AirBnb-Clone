@@ -111,3 +111,24 @@ body {
   padding-left: 0;
   padding-right: 0;
 }
+
+/* .container {
+  margin-bottom: 1000px;
+  height: 100vh;
+} */
+
+/* new page */
+.row {
+  margin-bottom: 30px;
+}
+
+.btn-del {
+  height: 30px;
+  width: 70px;
+}
+
+/* MAP */
+#map { 
+  height: 400px;
+  width: 100%; 
+}
