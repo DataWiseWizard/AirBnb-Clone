@@ -8,12 +8,13 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema} = require("./schema.js");
 
-// const MONGO_URL = "mongodb://localhost:27017/wanderlust";
-const dbUrl = process.env.ATLASDB_URL;
+const MONGO_URL = "mongodb://localhost:27017/wanderlust";
+// const dbUrl = process.env.ATLASDB_URL;
 
 const session = require("express-session");
-const MongoStore = require("connect-mongo")
+const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -33,7 +34,7 @@ main()
     })
 
 async function main() {
-    await mongoose.connect(dbUrl);
+    mongoose.connect(MONGO_URL);
 }
 
 app.set("view engine", "ejs");
@@ -44,7 +45,7 @@ app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
 const store = MongoStore.create({
-    mongoUrl: dbUrl,
+    mongoUrl: MONGO_URL,
     crypto: {
         secret: "mysupersecretcode",
         touchAfter: 24 * 3600,
@@ -67,9 +68,9 @@ const sessionOptions = {
     },
 };
 
-// app.get("/", (req,res) =>{
-//     res.send("Hi, I'm root.");
-// })
+app.get("/", (req, res) => {
+    res.redirect("/listings");
+});
 
 
 
@@ -80,9 +81,22 @@ app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 
+passport.serializeUser(function(user, done) {
+    console.log("User to serialize:", user);
+    done(null, user.id);
+});
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+passport.deserializeUser(async function(id, done) {
+    console.log("ID to deserialize:", id);
+    try {
+        const user = await User.findById(id);
+        console.log("Deserialized user:", user);
+        done(null, user);
+    } catch (err) {
+        console.log("Error deserializing user:", err);
+        done(err, null);
+    }
+});
 
 app.use((req,res, next) => {
     res.locals.success = req.flash("success");
@@ -111,12 +125,12 @@ app.all("*", (req, res, next) => {
 })
 
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
     let { statusCode=500, message="SOmething Went Wrong!" } = err;
     res.render("error.ejs", { err });
     // res.status(statusCode).send(message);
 })
 
-app.listen(8080, () => {
+app.listen(8081, () => {
     console.log("server is started");
 });
