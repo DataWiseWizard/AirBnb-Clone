@@ -8,7 +8,7 @@ const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require("../utils/ExpressError.js"); // Standardize to ExpressError
+const ExpressError = require("./utils/ExpressError.js"); // Standardize to ExpressError
 const { listingSchema} = require("../schema.js"); // Keep local schema import
 
 const dbUrl = process.env.ATLASDB_URL; // Use environment variable for DB URL
