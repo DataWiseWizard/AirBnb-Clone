@@ -1,21 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-console.log("--- DEBUGGING FILE SYSTEM ---");
-console.log("Current directory (__dirname):", __dirname);
-console.log("Parent of __dirname:", path.resolve(__dirname, '..'));
-try {
-    console.log("Contents of current directory:", fs.readdirSync(__dirname));
-} catch (e) {
-    console.log("Error reading current directory:", e.message);
-}
-try {
-    console.log("Contents of parent directory:", fs.readdirSync(path.resolve(__dirname, '..')));
-} catch (e) {
-    console.log("Error reading parent directory:", e.message);
-}
-console.log("--- END DEBUGGING ---");
-
+const path = require("path");
 if(process.env.NODE_ENV !== "production") {
     require('dotenv').config();
     console.log(process.env);
@@ -25,8 +8,8 @@ const app = express();
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require("./utils/ExpressError.js"); // Standardize to ExpressError
-const { listingSchema} = require("./schema.js"); // Keep local schema import
+const ExpressError = require(path.join(__dirname, "utils", "ExpressError.js"));
+const { listingSchema} = require(path.join(__dirname, "schema.js"));
 
 const dbUrl = process.env.ATLASDB_URL; // Use environment variable for DB URL
 
@@ -35,11 +18,11 @@ const MongoStore = require("connect-mongo");
 const flash = require("connect-flash");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
-const User = require("./models/user.js");
+const User = require(path.join(__dirname, "models", "user.js"));
 
-const listingRouter = require("./routes/listing.js");
-const reviewRouter = require("./routes/review.js");
-const userRouter = require("./routes/user.js");
+const listingRouter = require(path.join(__dirname, "routes", "listing.js"));
+const reviewRouter = require(path.join(__dirname, "routes", "review.js"));
+const userRouter = require(path.join(__dirname, "routes", "user.js"));
 
 main()
     .then(() => {
