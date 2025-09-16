@@ -31,7 +31,7 @@ router.route("/:id")
     .delete(
         isLoggedIn,
         isOwner, // Added isOwner middleware
-        wrapAsync(listingController.destroyListing) // Used destroyListing
+        wrapAsync(listingController.deleteListing) // Used deleteListing
     );
 
 router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(listingController.renderEditForm)); // Edit route

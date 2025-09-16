@@ -1,8 +1,12 @@
 const mongoose = require("mongoose");
 const initData = require("./data.js");
 const Listing = require("../models/listing.js");
+require('dotenv').config({ path: '../.env' });
+const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
+const mapToken = process.env.MAP_TOKEN;
+const geocodingClient = mbxGeocoding({ accessToken:mapToken});
 
-const MONGO_URL = "mongodb://localhost:27017/wanderlust";
+const MONGO_URL = process.env.ATLASDB_URL;
 
 main()
     .then(() => {
@@ -18,8 +22,24 @@ async function main() {
 
 const initDB = async () => {
     await Listing.deleteMany({});
-    initData.data = initData.data.map((obj) => ({...obj, owner: "674df3a6278303095717befd"}));
-    await Listing.insertMany(initData.data);
+    
+    for (let listing of initData.data) {
+        let response = await geocodingClient
+            .forwardGeocode({
+                query: `${listing.location}, ${listing.country}`,
+                limit: 1,
+            })
+            .send();
+        if (response.body.features[0]) {
+            listing.geometry = response.body.features[0].geometry;
+        } else {
+            console.log(`Location not found for: ${listing.location}, ${listing.country}`);
+            listing.geometry = { type: 'Point', coordinates: [0, 0] }; 
+        }
+    }
+
+    const listingsWithOwner = initData.data.map((obj) => ({...obj, owner: "674df3a6278303095717befd"}));
+    await Listing.insertMany(listingsWithOwner);
     console.log("data was initialized");
 }
 

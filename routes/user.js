@@ -2,17 +2,17 @@ const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
-const { saveRedirectUrl } = require("../middlewares.js"); // Standardized import
+const { saveRedirectUrl } = require("../middlewares.js");
 
 const userController = require("../controllers/users.js");
 
 router
 .route("/signup")
-.get(userController.renderSignupForm) // Corrected function name
+.get(userController.renderSignupForm)
 .post(wrapAsync(userController.signup));
 
 router.route("/login")
-.get(userController.renderLoginForm) // Corrected function name
+.get(userController.renderLoginForm)
 .post(
     saveRedirectUrl,
     passport.authenticate("local", {

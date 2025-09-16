@@ -11,10 +11,6 @@ const listingSchema = new Schema({
     image: { // Adopt remote's image object structure
         url: String,
         filename: String,
-        default: {
-            url: "https://images.unsplash.com/photo-1726715245558-69afa5ded798?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            filename: "listingimage" // A generic filename for default
-        },
     },
     price: Number,
     location: String,

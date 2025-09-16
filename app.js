@@ -46,7 +46,7 @@ app.use(express.static(path.join(__dirname, "/public")));
 const store = MongoStore.create({
     mongoUrl: dbUrl, // Use dbUrl from environment variable
     crypto: {
-        secret: process.env.SECRET, // Use environment variable for secret
+        secret: process.env.SECRET || 'thisshouldbeabettersecret!', // Use environment variable for secret
     },
     touchAfter: 24 * 3600,
 })
