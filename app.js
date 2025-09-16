@@ -1,3 +1,4 @@
+console.log("Executing latest version of app.js");
 if(process.env.NODE_ENV !== "production") {
     require('dotenv').config();
     console.log(process.env);
