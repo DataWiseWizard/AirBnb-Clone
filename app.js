@@ -1,21 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-console.log("--- NEW DEBUGGING --- ");
-const utilsPath = path.join(__dirname, 'utils');
-console.log("Checking for directory:", utilsPath);
-try {
-    const stats = fs.statSync(utilsPath);
-    console.log("'utils' exists.");
-    console.log("Is it a directory?", stats.isDirectory());
-    if (stats.isDirectory()) {
-        console.log("Contents of 'utils':", fs.readdirSync(utilsPath));
-    }
-} catch (e) {
-    console.log("Error checking 'utils' directory:", e.message);
-}
-console.log("--- END NEW DEBUGGING ---");
-
+const path = require("path");
 if(process.env.NODE_ENV !== "production") {
     require('dotenv').config();
     console.log(process.env);
@@ -25,7 +8,7 @@ const app = express();
 const mongoose = require("mongoose");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const ExpressError = require(path.join(__dirname, "utils", "ExpressError.js"));
+const ExpressError = require(path.join(__dirname, "utils", "expressError.js"));
 const { listingSchema} = require(path.join(__dirname, "schema.js"));
 
 const dbUrl = process.env.ATLASDB_URL; // Use environment variable for DB URL
