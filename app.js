@@ -1,4 +1,21 @@
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
+
+console.log("--- NEW DEBUGGING --- ");
+const utilsPath = path.join(__dirname, 'utils');
+console.log("Checking for directory:", utilsPath);
+try {
+    const stats = fs.statSync(utilsPath);
+    console.log("'utils' exists.");
+    console.log("Is it a directory?", stats.isDirectory());
+    if (stats.isDirectory()) {
+        console.log("Contents of 'utils':", fs.readdirSync(utilsPath));
+    }
+} catch (e) {
+    console.log("Error checking 'utils' directory:", e.message);
+}
+console.log("--- END NEW DEBUGGING ---");
+
 if(process.env.NODE_ENV !== "production") {
     require('dotenv').config();
     console.log(process.env);
